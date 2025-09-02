@@ -1,0 +1,40 @@
+# Node.js
+node_modules/
+npm-debug.log
+yarn-error.log
+.env
+.DS_Store
+/dist
+/build
+coverage/
+*.log
+
+# VS Code
+.vscode/
+
+# OS
+Thumbs.db
+*.swp
+*.swo
+
+# Others
+*.local
+*.cache
+*.tmp
+*.bak
+
+# Logs
+logs/
+*.log
+
+# IDE
+.idea/
+
+# Test
+/test-output/
+
+# Misc
+*.tgz
+
+# Ignore frontend build if present
+../frontend/build

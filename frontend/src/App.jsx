@@ -140,7 +140,7 @@ console.log(calculateSum(5, 3));`);
             </button>
           </div>
         </div>
-
+   
         {/* Right - Review container */}
         <div className="flex flex-col border-4 border-slate-700 rounded-lg overflow-hidden min-h-0 bg-slate-900 h-full">
           <div className="p-4 bg-slate-800 border-b-2 border-slate-700 flex items-center justify-between flex-shrink-0">

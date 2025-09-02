@@ -41,7 +41,7 @@ console.log(calculateSum(5, 3));`);
 
     try {
       // Replaced axios with native fetch API for API calls.
-      const response = await fetch("https://ai-powered-code-reviewer-8snw.onrender.com", {
+      const response = await fetch("https://ai-powered-code-reviewer-8snw.onrender.com/ai/get-review", {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ code }),

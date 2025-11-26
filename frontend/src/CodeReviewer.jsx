@@ -41,7 +41,7 @@ console.log(calculateSum(5, 3));`);
 
         try {
             const response = await axios.post(
-                "https://ai-powered-code-reviewer-8snw.onrender.com/ai/get-review",
+                `${import.meta.env.VITE_SERVER_BASE_URL}/ai/get-review`,
                 { code }
             );
 

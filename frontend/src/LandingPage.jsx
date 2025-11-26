@@ -1,16 +1,18 @@
 import { useState, useEffect, useRef } from 'react'
 import { motion } from 'framer-motion'
 import { Link } from 'react-router-dom'
-import VANTA from 'vanta'
+import * as THREE from 'three'
+import DOTS from 'vanta/dist/vanta.dots.min'
 
 const LandingPage = () => {
     const [vantaEffect, setVantaEffect] = useState(null)
     const myRef = useRef(null)
 
     useEffect(() => {
-        if (!vantaEffect && window.VANTA) {
-            setVantaEffect(window.VANTA.DOTS({
+        if (!vantaEffect) {
+            setVantaEffect(DOTS({
                 el: myRef.current,
+                THREE: THREE,
                 mouseControls: true,
                 touchControls: true,
                 gyroControls: false,

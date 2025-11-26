@@ -1,3 +1,4 @@
+<<<<<<< Updated upstream
 -----
 
 # 🤖 AI-Powered Code Reviewer
@@ -146,3 +147,5 @@ This application is designed to be deployed as two separate services.
 5.  View the AI-generated feedback and suggestions in the output panel.
 
 -----
+=======
+>>>>>>> Stashed changes

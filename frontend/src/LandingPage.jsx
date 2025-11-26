@@ -1,84 +1,64 @@
-import { useState, useEffect, useRef } from 'react'
-import { motion } from 'framer-motion'
-import { Link } from 'react-router-dom'
-import * as THREE from 'three'
-import DOTS from 'vanta/dist/vanta.dots.min'
+import React, { useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 
-const LandingPage = () => {
-    const [vantaEffect, setVantaEffect] = useState(null)
-    const myRef = useRef(null)
+function LandingPage() {
+  const vantaRef = useRef(null);
+  const navigate = useNavigate();
 
-    useEffect(() => {
-        if (!vantaEffect) {
-            setVantaEffect(DOTS({
-                el: myRef.current,
-                THREE: THREE,
-                mouseControls: true,
-                touchControls: true,
-                gyroControls: false,
-                minHeight: 200.00,
-                minWidth: 200.00,
-                scale: 1.00,
-                scaleMobile: 1.00,
-                color: 0x20b2aa,
-                backgroundColor: 0x0f172a
-            }))
-        }
-        return () => {
-            if (vantaEffect) vantaEffect.destroy()
-        }
-    }, [vantaEffect])
+  useEffect(() => {
+    const loadVanta = async () => {
+      // Load Three.js first
+      const threeScript = document.createElement('script');
+      threeScript.src = 'https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js';
+      threeScript.async = true;
+      
+      threeScript.onload = () => {
+        // Load Vanta after Three.js
+        const vantaScript = document.createElement('script');
+        vantaScript.src = 'https://cdn.jsdelivr.net/npm/vanta@latest/dist/vanta.dots.min.js';
+        vantaScript.async = true;
+        
+        vantaScript.onload = () => {
+          if (vantaRef.current && window.VANTA) {
+            window.VANTA.DOTS({
+              el: vantaRef.current,
+              mouseControls: true,
+              touchControls: true,
+              gyroControls: false,
+              minHeight: 200.0,
+              minWidth: 200.0,
+              scale: 1.0,
+              scaleMobile: 1.0,
+              color: 0x3b82f6,
+              backgroundColor: 0x0f172a,
+            });
+          }
+        };
+        document.body.appendChild(vantaScript);
+      };
+      document.body.appendChild(threeScript);
+    };
 
-    return (
-        <div ref={myRef} className="h-screen w-full flex flex-col items-center justify-center text-white overflow-hidden relative">
-            {/* Content overlay */}
-            <div className="z-10 text-center px-4 max-w-4xl">
-                <motion.h1
-                    initial={{ opacity: 0, y: -50 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.8, ease: "easeOut" }}
-                    className="text-5xl md:text-7xl font-bold mb-6 tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-teal-300"
-                >
-                    Codalyze
-                </motion.h1>
+    loadVanta();
 
-                <motion.p
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ delay: 0.5, duration: 0.8 }}
-                    className="text-xl md:text-2xl text-slate-300 mb-10 font-light"
-                >
-                    AI-Powered Code Analysis & Optimization
-                </motion.p>
+    return () => {
+      // Cleanup is handled by Vanta
+    };
+  }, []);
 
-                <motion.div
-                    initial={{ opacity: 0, scale: 0.8 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ delay: 1, duration: 0.5 }}
-                >
-                    <Link
-                        to="/app"
-                        className="px-8 py-4 bg-blue-600 hover:bg-blue-700 text-white rounded-full font-semibold text-lg transition-all shadow-lg hover:shadow-blue-500/50 flex items-center justify-center mx-auto w-fit"
-                    >
-                        Get Started
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5 ml-2">
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3" />
-                        </svg>
-                    </Link>
-                </motion.div>
-            </div>
-
-            {/* Footer/Copyright */}
-            <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 1.5, duration: 1 }}
-                className="absolute bottom-8 text-slate-500 text-sm"
-            >
-                © 2025 Codalyze. All rights reserved.
-            </motion.div>
-        </div>
-    )
+  return (
+    <div ref={vantaRef} className="w-full h-screen flex items-center justify-center">
+      <div className="text-center text-white z-10">
+        <h1 className="text-5xl font-bold mb-4">AI Code Reviewer</h1>
+        <button
+          onClick={() => navigate('/app')}
+          className="px-6 py-3 bg-blue-500 hover:bg-blue-600 rounded-lg font-semibold"
+        >
+          Start Reviewing
+        </button>
+      </div>
+    </div>
+  );
 }
 
-export default LandingPage
+export default LandingPage;

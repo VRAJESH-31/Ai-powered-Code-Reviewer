@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import axios from "axios";
 
 // The main CodeReviewer component
 function CodeReviewer() {
@@ -39,19 +40,12 @@ console.log(calculateSum(5, 3));`);
         setReview("");
 
         try {
-            // Replaced axios with native fetch API for API calls.
-            const response = await fetch("https://ai-powered-code-reviewer-8snw.onrender.com/ai/get-review", {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ code }),
-            });
+            const response = await axios.post(
+                "https://ai-powered-code-reviewer-8snw.onrender.com/ai/get-review",
+                { code }
+            );
 
-            if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
-            }
-
-            const { summary, suggestions } = await response.json();
+            const { summary, suggestions } = response.data;
 
             setReview(
                 `**Code Review Summary**\n\n${summary || "No summary provided."}\n\n**Suggestions for Improvement**\n${suggestions?.length ? suggestions.map(s => `- ${s}`).join("\n") : "No suggestions found."}`

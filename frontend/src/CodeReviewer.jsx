@@ -1,18 +1,22 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import axios from "axios";
+import {Upload} from "lucide-react"
 
 // The main CodeReviewer component
 function CodeReviewer() {
     const [code, setCode] = useState(`Enter your code here. For example:
-  function calculateSum(a, b) {
-  return a + b;
+function calculateSum(a, b) {
+return a + b;
 }
 
 console.log(calculateSum(5, 3));`);
     const [review, setReview] = useState("");
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState(null);
+
+    // Ref for the hidden file input element
+    const fileInputRef = useRef(null);
 
     /**
      * Replaces external Markdown library with a simple, self-contained function.
@@ -28,9 +32,15 @@ console.log(calculateSum(5, 3));`);
             .replace(/\n/g, '<br/>'); // Line breaks
 
         // Wrap list items in a ul if they exist
+        // Note: This simple approach might create multiple ul tags. A more robust parser is needed for complex markdown, but this adheres to the original function's goal.
         if (html.includes('<li>')) {
             html = html.replace(/(<li>.*?<\/li>)/g, '<ul>$1</ul>');
         }
+        
+        // Fix for multiple consecutive <ul> tags created by the simple logic above
+        // This is a minimal fix and should ideally be handled by a proper markdown-to-HTML parser.
+        html = html.replace(/<\/ul><ul>/g, ''); 
+        
         return html;
     };
 
@@ -62,6 +72,31 @@ console.log(calculateSum(5, 3));`);
         setCode("");
         setReview("");
         setError(null);
+    };
+
+    // function to handle file selection
+    const handleFileChange = (event) => {
+        const file = event.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                // Set the code state to the content of the file
+                setCode(e.target.result);
+                setReview(""); // Clear previous review
+                setError(null); // Clear previous error
+            };
+            reader.onerror = () => {
+                setError("❌ Error reading file. Please try again.");
+            };
+            reader.readAsText(file); // Read the file as plain text
+        }
+        // Reset the file input value so the same file can be uploaded again
+        event.target.value = null; 
+    };
+    
+    // New function to trigger the hidden file input
+    const triggerFileUpload = () => {
+        fileInputRef.current.click();
     };
 
     return (
@@ -134,43 +169,67 @@ console.log(calculateSum(5, 3));`);
                             )}
                         </AnimatePresence>
                     </div>
-                    <div className="flex justify-end gap-4 p-4 border-t border-slate-700/50 bg-slate-800/30 flex-shrink-0">
+                    <div className="flex justify-between items-center gap-4 p-4 border-t border-slate-700/50 bg-slate-800/30 flex-shrink-0">
+                        {/* New: File Upload Button/Icon */}
                         <motion.button
                             whileHover={{ scale: 1.05 }}
                             whileTap={{ scale: 0.95 }}
-                            onClick={clearCode}
+                            onClick={triggerFileUpload}
                             disabled={isLoading}
-                            className="px-6 py-2 text-sm bg-transparent text-slate-400 border border-slate-600 rounded-lg uppercase hover:bg-slate-700/50 hover:text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
+                            className="p-2 text-sm bg-transparent text-teal-400 border border-slate-600 rounded-lg hover:bg-slate-700/50 hover:text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                            title="Upload Code File"
                         >
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor" className="w-4 h-4 mr-2">
-                                <path strokeLinecap="round" strokeLinejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99" />
-                            </svg>
-                            Reset
+                            <Upload />
                         </motion.button>
-                        <motion.button
-                            whileHover={{ scale: 1.05, boxShadow: "0 0 15px rgba(37, 99, 235, 0.5)" }}
-                            whileTap={{ scale: 0.95 }}
-                            onClick={reviewCode}
-                            disabled={isLoading}
-                            className="px-6 py-2 text-sm bg-gradient-to-r from-blue-600 to-blue-500 text-white border border-blue-500 rounded-lg uppercase transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center shadow-lg"
-                        >
-                            {isLoading ? (
-                                <span className="flex items-center">
-                                    <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                    </svg>
-                                    Processing...
-                                </span>
-                            ) : (
-                                <span className="flex items-center">
-                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor" className="w-4 h-4 mr-2">
-                                        <path strokeLinecap="round" strokeLinejoin="round" d="M6 12 3.269 3.125A59.769 59.769 0 0 1 21.492 12 59.769 59.769 0 0 1 3.27 20.875L5.999 12Zm0 0h7.5" />
-                                    </svg>
-                                    Analyze Code
-                                </span>
-                            )}
-                        </motion.button>
+                        
+                        {/* Hidden file input */}
+                        <input
+                            type="file"
+                            ref={fileInputRef}
+                            onChange={handleFileChange}
+                            className="hidden" // Keep the input hidden
+                            accept="text/*"
+                        />
+                        
+                        {/* Action buttons (Reset and Analyze) */}
+                        <div className="flex gap-4">
+                            <motion.button
+                                whileHover={{ scale: 1.05 }}
+                                whileTap={{ scale: 0.95 }}
+                                onClick={clearCode}
+                                disabled={isLoading}
+                                className="px-6 py-2 text-sm bg-transparent text-slate-400 border border-slate-600 rounded-lg uppercase hover:bg-slate-700/50 hover:text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
+                            >
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor" className="w-4 h-4 mr-2">
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99" />
+                                </svg>
+                                Reset
+                            </motion.button>
+                            <motion.button
+                                whileHover={{ scale: 1.05, boxShadow: "0 0 15px rgba(37, 99, 235, 0.5)" }}
+                                whileTap={{ scale: 0.95 }}
+                                onClick={reviewCode}
+                                disabled={isLoading}
+                                className="px-6 py-2 text-sm bg-gradient-to-r from-blue-600 to-blue-500 text-white border border-blue-500 rounded-lg uppercase transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center shadow-lg"
+                            >
+                                {isLoading ? (
+                                    <span className="flex items-center">
+                                        <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                        </svg>
+                                        Processing...
+                                    </span>
+                                ) : (
+                                    <span className="flex items-center">
+                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor" className="w-4 h-4 mr-2">
+                                            <path strokeLinecap="round" strokeLinejoin="round" d="M6 12 3.269 3.125A59.769 59.769 0 0 1 21.492 12 59.769 59.769 0 0 1 3.27 20.875L5.999 12Zm0 0h7.5" />
+                                        </svg>
+                                        Analyze Code
+                                    </span>
+                                )}
+                            </motion.button>
+                        </div>
                     </div>
                 </motion.div>
 
@@ -226,7 +285,7 @@ console.log(calculateSum(5, 3));`);
                                     <p className="max-w-xs text-slate-500">
                                         {isLoading
                                             ? "Executing analysis protocols..."
-                                            : "Submit code to initiate AI analysis and receive feedback."}
+                                            : "Submit code to initiate AI analysis and receive feedback. Or, click the upload icon to load a file."}
                                     </p>
                                 </motion.div>
                             )}
